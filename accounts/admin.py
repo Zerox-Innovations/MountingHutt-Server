@@ -3,5 +3,5 @@ from accounts.models import CustomUser
 
 
 @admin.register(CustomUser)
-class BusAdmin(admin.ModelAdmin):
+class UserAdmin(admin.ModelAdmin):
     list_display = ("id", "name")
