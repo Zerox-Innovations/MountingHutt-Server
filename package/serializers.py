@@ -1,6 +1,6 @@
 from rest_framework import serializers
-from package.models import Package,DayDetail
-
+from package.models import Package,DayDetail,Booking
+from rest_framework.exceptions import ValidationError
 
 
 
@@ -35,3 +35,94 @@ class PackageDetailSerializer(serializers.ModelSerializer):
             DayDetail.objects.create(package=package, **day_detail_data)
 
         return package
+
+
+        
+class BookingRetriveSerializer(serializers.ModelSerializer):
+    
+
+    class Meta:
+        model = Package
+        fields = ['id','title','days','nights']
+
+
+class BookingSerializer(serializers.ModelSerializer):
+    package_data = BookingRetriveSerializer(source='booking_package', read_only=True)
+    
+    class Meta:
+        model = Booking
+        fields = ['id','travel_start_date','travel_end_date',
+                  'number_of_travelers','contact_number','email','package_data']
+        
+
+    def validate(self, data):
+        
+        if 'travel_start_date' in data and 'travel_end_date' in data:
+            if data['travel_start_date'] > data['travel_end_date']:
+                raise serializers.ValidationError("Travel start date must be before the end date.")
+        return data
+    
+
+
+class BookingListSerializer(serializers.ModelSerializer):
+    package_data = BookingRetriveSerializer(source='booking_package', read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = ['id','package_data','travel_start_date','travel_end_date','number_of_travelers',
+                  'booking_date','total_price',
+                  'contact_number','email','payment_status','status']
+        
+
+
+
+class BookingDetailsSerializer(serializers.ModelSerializer):
+    """
+    This nested serializer provides read-only access to specific details about a booking.
+    """
+    class Meta:
+        model = Booking
+        fields = ['booking_date', 'total_price', 'payment_status', 'status']
+        read_only_fields = fields
+
+
+class BookingUpdateSerializer(serializers.ModelSerializer):
+    package_data = BookingRetriveSerializer(source='booking_package', read_only=True)
+    booking_data = BookingDetailsSerializer(source='*', read_only=True) 
+
+    class Meta:
+        model = Booking
+        fields = ['travel_start_date','travel_end_date','number_of_travelers','contact_number','email',
+                  'booking_data','package_data']
+
+
+    def update(self, instance, validated_data):
+        instance.travel_start_date = validated_data.get('travel_start_date',instance.travel_start_date)
+        booking_package = instance.booking_package
+
+        conflict = Booking.objects.filter(
+            booking_package=booking_package,
+            travel_start_date=instance.travel_start_date
+        ).exclude(id=instance.id).exists()
+
+        if conflict:
+            raise serializers.ValidationError(
+                {"Msg": "A booking already exists for this package on the same travel start date."}
+            )
+
+        instance.travel_end_date = validated_data.get('travel_end_date',instance.travel_end_date)
+        instance.contact_number = validated_data.get('contact_number',instance.contact_number)
+        instance.email = validated_data.get('email',instance.email)
+
+        new_travelers = validated_data.get('number_of_travelers', instance.number_of_travelers)
+
+        if new_travelers < 4 :
+            raise ValidationError({"Msg":'Should have Minimum 4 Members'})
+        if new_travelers != instance.number_of_travelers:
+            traveler_difference = new_travelers - instance.number_of_travelers
+            instance.total_price += traveler_difference * -200 
+
+        instance.number_of_travelers = new_travelers
+
+        instance.save()
+        return instance
