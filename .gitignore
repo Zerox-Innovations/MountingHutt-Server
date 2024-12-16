@@ -1,3 +1,4 @@
 traenv
 .env
-.pyc
+*.pyc
+__pycache__/
