@@ -3,7 +3,7 @@ from package.models import DayDetail, Package , Booking
 
 @admin.register(Package)
 class PackagesAdmin(admin.ModelAdmin):
-    list_display = ('title', 'description', 'days', 'nights', 'price', 'created_at', 'updated_at')
+    list_display = ('id','title', 'description', 'days', 'nights', 'price', 'created_at', 'updated_at')
 
 @admin.register(DayDetail)
 class DayDetailAdmin(admin.ModelAdmin):

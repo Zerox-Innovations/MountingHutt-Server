@@ -9,7 +9,7 @@ from package.views import (
 
 router = DefaultRouter()
 router.register("packages", PackageViewset, basename="package")
-router.register("packageDetail", PackageDetailViewset, basename="packageDetail")
+# router.register("packageDetail", PackageDetailViewset, basename="packageDetail")
 
 
 urlpatterns = [

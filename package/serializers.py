@@ -5,7 +5,6 @@ from rest_framework.exceptions import ValidationError
 
 
 class DayDetailSerializer(serializers.ModelSerializer):
-  
     class Meta:
       model = DayDetail
       fields = ('package','day_number', 'description')
@@ -26,14 +25,18 @@ class PackageDetailSerializer(serializers.ModelSerializer):
     class Meta:
         model = Package
         fields = ('id', 'title', 'description', 'days', 'nights', 'price', 'day_details')
-    
+
     def create(self, validated_data):
+        # Extract day_details from validated_data
         day_details_data = validated_data.pop('day_details', [])
+        
+        # Create the Package instance
         package = Package.objects.create(**validated_data)
         
+        # Create associated DayDetail instances
         for day_detail_data in day_details_data:
             DayDetail.objects.create(package=package, **day_detail_data)
-
+        
         return package
 
 
