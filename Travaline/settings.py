@@ -6,6 +6,8 @@ import os
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
+
+load_dotenv()
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
@@ -15,7 +17,7 @@ SECRET_KEY = 'django-insecure-x0swp^h!v&c*fnttw6ibcpw%#hr*9%)^&)lj(4dv+tgx3-19gp
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 
 # Application definition
@@ -31,11 +33,14 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'accounts',
     'package',
+    'corsheaders',
+    'admins'
 ]
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -167,3 +172,9 @@ SIMPLE_JWT = {
 }
 
 
+
+
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # React development server
+    "http://127.0.0.1:3000",
+]
