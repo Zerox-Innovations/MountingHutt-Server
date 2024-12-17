@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from package.views import (
     PackageViewset,
-    PackageDetailViewset,BookingView,BookingListAndUpdateView
+    BookingView,BookingListAndUpdateView
 )
 
 
