@@ -1,5 +1,5 @@
 from django.contrib import admin
-from package.models import DayDetail, Package , Booking
+from package.models import DayDetail, Package , Booking , Payment
 
 @admin.register(Package)
 class PackagesAdmin(admin.ModelAdmin):
@@ -12,3 +12,8 @@ class DayDetailAdmin(admin.ModelAdmin):
 @admin.register(Booking)
 class BookingAdmin(admin.ModelAdmin):
     list_display = ('id','user', 'booking_package', 'status')
+
+
+@admin.register(Payment)
+class PaymentgAdmin(admin.ModelAdmin):
+    list_display = ('id','user', 'booking_data', 'payment_status')

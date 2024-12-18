@@ -8,6 +8,7 @@ from package.serializers import (
 )
 from package.models import Package,Booking
 from rest_framework import viewsets
+from datetime import timedelta
 
 
 
@@ -60,37 +61,39 @@ class BookingView(APIView):
         except (ValueError, TypeError):
             return Response({'Msg': "package_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
         
-        Booking_package = Package.objects.get(id = package_id)
+        booking_package = Package.objects.get(id = package_id)
         
         serializer = BookingSerializer(data = request.data)
         if serializer.is_valid():
             travel_start_date = serializer.validated_data.get('travel_start_date')
-            existing_bookings = Booking.objects.filter(
-                booking_package = Booking_package,
-                travel_start_date = travel_start_date
-
-            )
-            if existing_bookings.exists() :
-                return Response({"Msg":'Slot is Completed'})
-
+            total_days = booking_package.nights
+            travel_end_date = travel_start_date + timedelta(days=total_days)
 
 
             number_of_travelers = serializer.validated_data.get('number_of_travelers')
             if number_of_travelers < 4 :
                 return Response({"Msg":'Should have Minimum 4 Members'})
             
-            base_price = Booking_package.price
+            max_members = booking_package.max_members
+            if max_members is not None and number_of_travelers > max_members:
+                return Response({"Msg": f"The maximum number of members allowed is {max_members}"})
+
+            
+            base_price = booking_package.price
             decrement = (number_of_travelers - 4) * 200 if number_of_travelers > 4 else 0
             total_price = base_price - decrement
+
+            payble_amount = round(total_price * 0.4)
 
             queryset = Booking.objects.create(
 
                 user = request.user,
-                booking_package = Booking_package,
+                booking_package = booking_package,
                 travel_start_date = travel_start_date,
-                travel_end_date  = serializer.validated_data.get('travel_end_date'),
+                travel_end_date  = travel_end_date,
                 number_of_travelers = number_of_travelers,
                 total_price = total_price,
+                advance_amount = payble_amount,
                 contact_number = serializer.validated_data.get('contact_number'),
                 email = serializer.validated_data.get('email'),
                 
@@ -98,9 +101,10 @@ class BookingView(APIView):
             response_serializer = BookingSerializer(queryset)
             response_data = {
                 "total_price": queryset.total_price,
-                "payment_status": queryset.payment_status,
+                "advance_amount": queryset.advance_amount,
                 "status": queryset.status,
                 "booking_date": queryset.booking_date,
+                "travel_end_date":queryset.travel_end_date,
                 "serializer":response_serializer.data
             }
             
@@ -142,4 +146,7 @@ class BookingListAndUpdateView(APIView):
             return Response(serializer.errors)
         except Booking.DoesNotExist:
             return Response({"Msg":'Booking Not Found'})
+
+
+
 
