@@ -105,19 +105,7 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
         booking_package = instance.booking_package
         total_days = booking_package.nights
         instance.travel_end_date = instance.travel_start_date + timedelta(days=total_days)
-        # booking_package = instance.booking_package
-
-        # conflict = Booking.objects.filter(
-        #     booking_package=booking_package,
-        #     travel_start_date=instance.travel_start_date
-        # ).exclude(id=instance.id).exists()
-
-        # if conflict:
-        #     raise serializers.ValidationError(
-        #         {"Msg": "A booking already exists for this package on the same travel start date."}
-        #     )
-
-        # instance.travel_end_date = validated_data.get('travel_end_date',instance.travel_end_date)
+       
         instance.contact_number = validated_data.get('contact_number',instance.contact_number)
         instance.email = validated_data.get('email',instance.email)
 
