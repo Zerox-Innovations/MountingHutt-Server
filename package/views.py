@@ -92,16 +92,6 @@ class BookingView(APIView):
             total_days = booking_package.nights
             travel_end_date = travel_start_date + timedelta(days=total_days)
 
-            # existing_bookings = Booking.objects.filter(
-            #     booking_package = Booking_package,
-            #     travel_start_date = travel_start_date,
-            #     travel_end_date = travel_end_date
-
-            # )
-            # if existing_bookings.exists() :
-            #     return Response({"Msg":'Slot is Completed'})
-
-            
 
             number_of_travelers = serializer.validated_data.get('number_of_travelers')
             if number_of_travelers < 4 :
