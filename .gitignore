@@ -4,3 +4,4 @@ travelenv
 .env
 *.pyc
 __pycache__/
+/activity
