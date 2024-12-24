@@ -40,19 +40,30 @@ class Item_category(models.Model):
 
 class Food(models.Model):
 
-    title = models.CharField(max_length=250,null=True,blank=True)
+    item = models.CharField(max_length=250,null=True,blank=True)
     image = models.ImageField(upload_to='Food',blank=True,null=True)
     description = models.TextField(max_length=250,blank=True,null=True)
     time = models.ForeignKey(Item_category,on_delete=models.CASCADE,related_name='foodtime',blank=True,null=True)
-    category = models.CharField(max_length=20,choices=[('veg','veg'),('Non-Veg','Non-Veg'),
+    category = models.CharField(max_length=20,choices=[('Veg','Veg'),('Non-Veg','Non-Veg'),
                                                        ('Hot','Hot'),('Cool','Cool')],null=True,blank=True)
     price = models.PositiveIntegerField(null=True,blank=True)
     rating = models.PositiveIntegerField(null=True,blank=True)
 
     def __str__(self):
-        return self.title
+        return self.item
 
     
+class Room(models.Model):
+
+    room_name = models.CharField(max_length=250)
+    image = models.ImageField(null=True,blank=True)
+    capacity = models.PositiveIntegerField()
+    description = models.TextField(max_length=250)
+    price = models.PositiveIntegerField()
+    rating = models.PositiveIntegerField(null=True,blank=True)
+
+    def __str__(self):
+        return self.room_name
 
 
 # class services(models.Model):
