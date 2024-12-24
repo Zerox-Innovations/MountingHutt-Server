@@ -5,3 +5,4 @@ travelenv
 *.pyc
 __pycache__/
 /activity
+/Food

@@ -3,12 +3,13 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework import viewsets
-from admins.models import Blog,Activities
+from admins.models import Blog,Activities,Food,Room
 from admins.serializers import (
     BlogSerializer,
     CustomUserSerializer,
     AdminBookingListSerializer,
-    ActivitySerializer,ActivityRetriveSerializer
+    ActivitySerializer,ActivityRetriveSerializer,AdminFoodSerializer,
+    AdminFoodRetriveSerializer,AdminRoomSerializer,AdminRoomRetriveSerializer
 )
 from accounts.models import CustomUser
 from package.models import Booking,Package
@@ -133,7 +134,6 @@ class AdminActivityView(APIView):
 
     def put(self,request,*args,**kwargs):
 
-        activity_id = request.GET.get('activity_id')
 
         activity_id = request.GET.get('activity_id')
         if not activity_id:
@@ -162,7 +162,6 @@ class AdminActivityView(APIView):
 
     def delete(self,request,*args,**kwargs):
         
-        activity_id = request.GET.get('activity_id')
 
         activity_id = request.GET.get('activity_id')
         if not activity_id:
@@ -182,7 +181,164 @@ class AdminActivityView(APIView):
 
                 
 
+class AdminFoodView(APIView):
 
+    def post(self,request,*args,**kwargs):
+
+        serializer = AdminFoodSerializer(data = request.data)
+
+        if serializer.is_valid():
+
+
+            food = Food.objects.create(
+
+                item = serializer.validated_data.get('item'),
+                image = serializer.validated_data.get('image'),
+                description = serializer.validated_data.get('description'),
+                time = serializer.validated_data.get('time'),
+                category = serializer.validated_data.get('category'),
+                price = serializer.validated_data.get('price'),
+                
+            )
+            if food.image:
+                food.image = request.build_absolute_uri(food.image.url)
+            response_serializer = AdminFoodSerializer(food)
+            return Response(response_serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+
+
+
+    def get(self,request,*args,**kwargs):
+
+        try:
+            food = Food.objects.all()
+            serializer = AdminFoodRetriveSerializer(food,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Food.DoesNotExist:
+            return Response({"Msg":'Foods not add yet'},status=status.HTTP_404_NOT_FOUND)
+        
+
+    def put(self,request,*args,**kwargs):
+
+        food_id = request.GET.get('food_id')
+        if not food_id:
+            return Response({'Msg': "Enter the food_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            food_id = int(food_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "food_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            food = Food.objects.get(id=food_id)
+            serializer = AdminFoodSerializer(food,data=request.data,partial = True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Food.DoesNotExist:
+            return Response({"Msg":'Food not found'},status=status.HTTP_404_NOT_FOUND)
+        
+
+    def delete(self,request,*args,**kwargs):
+
+
+        food_id = request.GET.get('food_id')
+        if not food_id:
+            return Response({'Msg': "Enter the food_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            food_id = int(food_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "food_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            food = Food.objects.get(id=food_id)
+            food.delete()
+            return Response({"Msg":f'Deleted food item: {food}'},status=status.HTTP_200_OK)
+        except Food.DoesNotExist:
+            return Response
+
+
+
+
+class AdminRoomView(APIView):
+
+    def post(self,request,*arg,**kwargs):
+
+        serializer = AdminRoomSerializer(data = request.data)
+        if serializer.is_valid():
+
+            room = Room.objects.create(
+
+                room_name = serializer.validated_data.get('room_name'),
+                image = serializer.validated_data.get('image'),
+                capacity = serializer.validated_data.get('capacity'),
+                description = serializer.validated_data.get('description'),
+                price = serializer.validated_data.get('price'),
+
+            )
+            if room.image:
+                room.image = request.build_absolute_uri(room.image.url)
+            response_serializer = AdminRoomSerializer(room)
+            return Response(response_serializer.data,status=status.HTTP_201_CREATED)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+    
+
+    def get(self,request,*args,**kwargs):
+
+        try:
+            room = Room.objects.all()
+            serializer = AdminRoomRetriveSerializer(room,many=True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Room.DoesNotExist:
+            return Response({"Msg":'Room Not found'},status=status.HTTP_404_NOT_FOUND)
+        
+
+
+    def put(self,request,*args,**kwargs):
+
+
+        room_id = request.GET.get('room_id')
+        if not room_id:
+            return Response({'Msg': "Enter the room_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            room_id = int(room_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "room_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            room = Room.objects.get(id=room_id)
+            serializer = AdminRoomSerializer(room,data=request.data,partial = True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Room.DoesNotExist:
+            return Response({"Msg":'Food not found'},status=status.HTTP_404_NOT_FOUND)
+
+
+
+    def delete(self,request,*args,**kwargs):
+
+
+        room_id = request.GET.get('room_id')
+        if not room_id:
+            return Response({'Msg': "Enter the room_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            room_id = int(room_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "room_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            room = Room.objects.get(id=room_id)
+            room.delete()
+            return Response({"Msg":f'Deleted room: {room}'},status=status.HTTP_200_OK)
+        except Food.DoesNotExist:
+            return Response
 
         
 

@@ -4,7 +4,7 @@ from .views import (
     BlogViewset,
     UserListAPIView,
     AdminBookingListView,AdminDashboardView,
-    AdminActivityView
+    AdminActivityView,AdminFoodView,AdminRoomView
 
 )
 
@@ -19,4 +19,6 @@ urlpatterns = [
     path('adminbookings/', AdminBookingListView.as_view(), name='adminbookings'),  
     path('dashboard/', AdminDashboardView.as_view(), name='dashboard'),  
     path('activity/', AdminActivityView.as_view(), name='activity'),  
+    path('foods/', AdminFoodView.as_view(), name='foods'),  
+    path('rooms/', AdminRoomView.as_view(), name='rooms'),  
 ]
