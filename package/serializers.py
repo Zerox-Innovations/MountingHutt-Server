@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from package.models import Package,DayDetail,Booking
+from package.models import Package,DayDetail,Booking,Payment
 from rest_framework.exceptions import ValidationError
 from datetime import timedelta
 
@@ -124,3 +124,12 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
 
         instance.save()
         return instance
+    
+
+
+
+class PaymentSerializer(serializers.ModelSerializer):
+
+    class Meta :
+        model = Payment
+        fields = []

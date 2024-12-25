@@ -20,7 +20,6 @@ class Activities(models.Model):
     image = models.ImageField(upload_to='activity',blank=True,null=True)
     description = models.TextField(max_length=250,blank=True,null=True)
     price = models.PositiveIntegerField()
-    rating = models.PositiveIntegerField(null=True,blank=True)
 
     def __str__(self):
         return self.activity
@@ -47,7 +46,7 @@ class Food(models.Model):
     category = models.CharField(max_length=20,choices=[('Veg','Veg'),('Non-Veg','Non-Veg'),
                                                        ('Hot','Hot'),('Cool','Cool')],null=True,blank=True)
     price = models.PositiveIntegerField(null=True,blank=True)
-    rating = models.PositiveIntegerField(null=True,blank=True)
+    
 
     def __str__(self):
         return self.item
@@ -56,11 +55,11 @@ class Food(models.Model):
 class Room(models.Model):
 
     room_name = models.CharField(max_length=250)
-    image = models.ImageField(null=True,blank=True)
+    image = models.ImageField(upload_to='room',null=True,blank=True)
     capacity = models.PositiveIntegerField()
     description = models.TextField(max_length=250)
     price = models.PositiveIntegerField()
-    rating = models.PositiveIntegerField(null=True,blank=True)
+
 
     def __str__(self):
         return self.room_name

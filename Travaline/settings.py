@@ -37,7 +37,8 @@ INSTALLED_APPS = [
     'accounts',
     'package',
     'corsheaders',
-    'admins'
+    'admins',
+    'users'
 ]
 
 MIDDLEWARE = [
@@ -149,6 +150,8 @@ REST_FRAMEWORK = {
 }
 
 
+RAZOR_KEY_ID = 'rzp_test_XoecetWD2T6TX7'
+RAZOR_KEY_SECRET = 'r8WoK7atckb8SKWO79YDmgfd'
 
 
 SIMPLE_JWT = {
