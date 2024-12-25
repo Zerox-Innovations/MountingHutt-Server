@@ -6,10 +6,11 @@ from package.serializers import (
     PackageListSerializer,BookingRetriveSerializer,BookingSerializer,
     BookingListSerializer,BookingUpdateSerializer
 )
-from package.models import Package,Booking
+from package.models import Package,Booking,Payment
 from rest_framework import viewsets
 from datetime import timedelta
-
+import razorpay
+from django.conf import settings
 
 
 class PackageViewset(viewsets.ModelViewSet):
@@ -149,4 +150,57 @@ class BookingListAndUpdateView(APIView):
 
 
 
+
+
+razorpay_client = razorpay.Client(
+    auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET)
+)
+
+class PaymentView(APIView):
+    def post(self, request, *args, **kwargs):
+        user = request.user
+        booking_id = request.GET.get('booking_id')
+        
+        if not booking_id:
+            return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            booking_id = int(booking_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "booking_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            booking = Booking.objects.get(id=booking_id, user=user)
+        except Booking.DoesNotExist:
+            return Response({"error": "Invalid booking ID or booking does not belong to the user."}, status=400)
+
+        # Generate Razorpay order
+        amount = booking.advance_amount * 100  # Amount in paise
+        currency = 'INR'
+        try:
+            razorpay_order = razorpay_client.order.create({
+                "amount": amount,
+                "currency": currency,
+                "payment_capture": "1"  # Auto-capture payments
+            })
+
+            # Save order details in your database
+            payment = Payment.objects.create(
+                user=user,
+                booking_data=booking,
+                pay_amount=booking.advance_amount,
+                payment_status="Pending",
+                razorpay_order_id=razorpay_order["id"]
+            )
+
+            # Send order details to frontend
+            return Response({
+                "razorpay_order_id": razorpay_order["id"],
+                "amount": amount,
+                "currency": currency,
+                "payment_status": "Pending"
+            }, status=status.HTTP_201_CREATED)
+
+        except Exception as e:
+            return Response({"error": f"Failed to create Razorpay order: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 

@@ -79,7 +79,7 @@ class ActivityRetriveSerializer(serializers.ModelSerializer):
     
     class Meta:
         model = Activities
-        fields = ['activity','image','description','price','rating']
+        fields = ['activity','image','description','price']
 
 
 
@@ -127,7 +127,7 @@ class AdminFoodRetriveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Food
-        fields =['item','image','description','time','category','price','rating']
+        fields =['item','image','description','time','category','price']
 
 
 
@@ -156,4 +156,4 @@ class AdminRoomRetriveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Room
-        fields = ['room_name','image','capacity','description','price','rating']
+        fields = ['room_name','image','capacity','description','price']
