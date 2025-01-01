@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from package.views import (
     PackageViewset,
-    BookingView,BookingListAndUpdateView
+    BookingView,BookingListAndUpdateView,PaymentView
 )
 
 
@@ -16,4 +16,5 @@ urlpatterns = [
     path("", include(router.urls)),
     path('booking/',BookingView.as_view(),name='booking'),
     path('bookings/',BookingListAndUpdateView.as_view(),name='bookings'),
+    path('payment/',PaymentView.as_view(),name='payment'),
 ]
