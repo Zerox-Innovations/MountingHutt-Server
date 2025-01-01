@@ -3,7 +3,8 @@ from accounts.models import CustomUser
 
 class Package(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField(max_length=500)   
+    description = models.TextField(max_length=500)
+    banner_image = models.ImageField(null=True,blank=True)   
     days = models.PositiveIntegerField(default=1)
     nights = models.PositiveIntegerField(default=1)
     max_members = models.PositiveIntegerField(null=True,blank=True)
