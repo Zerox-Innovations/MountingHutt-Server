@@ -13,6 +13,7 @@ import razorpay
 from django.conf import settings
 
 
+
 class PackageViewset(viewsets.ModelViewSet):
     queryset = Package.objects.all()
     serializer_class = PackageListSerializer
@@ -152,9 +153,7 @@ class BookingListAndUpdateView(APIView):
 
 
 
-razorpay_client = razorpay.Client(
-    auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET)
-)
+razorpay_client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
 class PaymentView(APIView):
     def post(self, request, *args, **kwargs):
@@ -162,7 +161,7 @@ class PaymentView(APIView):
         booking_id = request.GET.get('booking_id')
         
         if not booking_id:
-            return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             booking_id = int(booking_id)
@@ -172,35 +171,57 @@ class PaymentView(APIView):
         try:
             booking = Booking.objects.get(id=booking_id, user=user)
         except Booking.DoesNotExist:
-            return Response({"error": "Invalid booking ID or booking does not belong to the user."}, status=400)
+            return Response({"error": "Invalid booking ID or booking does not belong to the user."}, status=status.HTTP_404_NOT_FOUND)
 
-        # Generate Razorpay order
+       
+        if not booking.advance_amount or booking.advance_amount <= 0:
+            return Response({"error": "Invalid advance amount for booking."}, status=status.HTTP_400_BAD_REQUEST)
+
+        
         amount = booking.advance_amount * 100  # Amount in paise
         currency = 'INR'
+        payment_description = f"Booking ID: {booking_id} - Advance Payment"
+
         try:
-            razorpay_order = razorpay_client.order.create({
+            # Razorpay Payment Link creation
+            payment_link = razorpay_client.payment_link.create({
                 "amount": amount,
                 "currency": currency,
-                "payment_capture": "1"  # Auto-capture payments
+                "description": payment_description,
+                "notify": {
+                    "email": True,  
+                    "sms": True      
+                },
+                "customer": {
+                    "name": user.name, 
+                    "email": user.email
+                },
+                "reminder_enable": True  
             })
 
-            # Save order details in your database
+            
             payment = Payment.objects.create(
                 user=user,
                 booking_data=booking,
                 pay_amount=booking.advance_amount,
                 payment_status="Pending",
-                razorpay_order_id=razorpay_order["id"]
+                razorpay_payment_id=payment_link['id']
             )
 
-            # Send order details to frontend
+           
             return Response({
-                "razorpay_order_id": razorpay_order["id"],
+                "payment_link": payment_link['short_url'], 
                 "amount": amount,
                 "currency": currency,
-                "payment_status": "Pending"
+                "payment_status": payment.payment_status
             }, status=status.HTTP_201_CREATED)
 
+        except razorpay.errors.BadRequestError as e:
+            return Response({"error": f"Razorpay Bad Request: {str(e)}"}, status=status.HTTP_400_BAD_REQUEST)
+        except razorpay.errors.ServerError as e:
+            return Response({"error": f"Razorpay Server Error: {str(e)}"}, status=status.HTTP_503_SERVICE_UNAVAILABLE)
         except Exception as e:
-            return Response({"error": f"Failed to create Razorpay order: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+            return Response({"error": f"Failed to create Razorpay payment link: {str(e)}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+
 
