@@ -46,7 +46,7 @@ class BookingRetriveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Package
-        fields = ['id','title','days','nights','max_members']
+        fields = ['id','title','price','days','nights','min_members','max_members']
 
 # Booking Creation
 class BookingSerializer(serializers.ModelSerializer):
@@ -55,7 +55,8 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = ['id','travel_start_date',
-                  'number_of_travelers','contact_number','email','package_data']
+                  'number_of_travelers','first_name','last_name','zip_code','contact_number','pro_noun',
+                  'email','package_data']
         
 
     def validate(self, data):
@@ -73,7 +74,7 @@ class BookingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = ['id','package_data','travel_start_date','travel_end_date','number_of_travelers',
-                  'booking_date','total_price',
+                  'booking_date','total_amount','payable_amount','advance_amount','balance_amount',
                   'contact_number','email','status']
         
 
@@ -85,7 +86,7 @@ class BookingDetailsSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Booking
-        fields = ['booking_date', 'total_price','advance_amount','status']
+        fields = ['booking_date', 'total_amount','payable_amount','advance_amount','balance_amount','status']
         read_only_fields = fields
 
 
@@ -100,30 +101,46 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
 
 
     def update(self, instance, validated_data):
-        instance.travel_start_date = validated_data.get('travel_start_date',instance.travel_start_date)
+        instance.travel_start_date = validated_data.get('travel_start_date', instance.travel_start_date)
 
         booking_package = instance.booking_package
         total_days = booking_package.nights
         instance.travel_end_date = instance.travel_start_date + timedelta(days=total_days)
-       
-        instance.contact_number = validated_data.get('contact_number',instance.contact_number)
-        instance.email = validated_data.get('email',instance.email)
+
+        instance.contact_number = validated_data.get('contact_number', instance.contact_number)
+        instance.email = validated_data.get('email', instance.email)
 
         new_travelers = validated_data.get('number_of_travelers', instance.number_of_travelers)
+        updated_travelers = new_travelers + instance.number_of_travelers
 
-        if new_travelers < 4 :
-            raise ValidationError({"Msg":'Should have Minimum 4 Members'})
+        min_members = booking_package.min_members
+        if updated_travelers < min_members:
+            raise ValidationError({"Msg": f"Should have a minimum of {min_members} members"})
         max_members = booking_package.max_members
-        if max_members is not None and new_travelers > max_members:
-                raise ValidationError({"Msg": f"The maximum number of members allowed is {max_members}"})
-        if new_travelers != instance.number_of_travelers:
-            traveler_difference = new_travelers - instance.number_of_travelers
-            instance.total_price += traveler_difference * -200 
-            instance.advance_amount = round(instance.total_price * 0.4)
-        instance.number_of_travelers = new_travelers
+        if max_members is not None and updated_travelers > max_members:
+            raise ValidationError({"Msg": f"The maximum number of members allowed is {max_members}"})
 
+        base_price = booking_package.price
+        updated_total_amount = base_price * updated_travelers
+        instance.total_amount = updated_total_amount
+
+        decrement = (updated_travelers - 4) * 200 if updated_travelers > 4 else 0
+        updated_payable_amount = updated_total_amount - decrement
+        instance.payable_amount = updated_payable_amount
+
+        # Ensure advance_amount is valid
+        calculated_advance = round(updated_payable_amount * 0.4)
+        if calculated_advance < 0:
+            raise ValidationError({"Msg": "Advance amount cannot be negative"})
+        instance.advance_amount = calculated_advance
+
+        # Calculate balance_amount
+        instance.balance_amount = updated_payable_amount - instance.advance_amount
+
+        instance.number_of_travelers = updated_travelers
         instance.save()
         return instance
+
     
 
 

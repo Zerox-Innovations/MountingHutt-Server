@@ -4,12 +4,13 @@ from admins.models import Activities,Food,Room
 from users.serializers import UserActivitySerializer,UserFoodSerializer,UserRoomSerializer
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework.permissions import IsAuthenticated
 # Create your views here.
 
 
 
 class UserActicityView(APIView):
-
+    permission_classes = [IsAuthenticated] 
     def get(self, request,*args,**kwargs):
 
         try:
@@ -22,7 +23,7 @@ class UserActicityView(APIView):
 
 
 class UserFoodView(APIView):
-
+    permission_classes = [IsAuthenticated] 
     def get(self,request,*args,**kwargs):
 
         try:
@@ -34,7 +35,7 @@ class UserFoodView(APIView):
         
 
 class UserRoomView(APIView):
-
+    permission_classes = [IsAuthenticated] 
     def get(self,request,*args,**kwargs):
 
         try:

@@ -13,7 +13,7 @@ from django.contrib.auth import authenticate
 from accounts.utils.token import get_tokens_for_user
 from accounts.models import CustomUser
 from rest_framework import viewsets
-
+from rest_framework.permissions import IsAuthenticated
   
 class UserRegistrationAPIView(APIView):
     
