@@ -15,7 +15,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # See https://docs.djangoproject.com/en/5.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-x0swp^h!v&c*fnttw6ibcpw%#hr*9%)^&)lj(4dv+tgx3-19gp'
+SECRET_KEY = os.getenv('SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
@@ -34,6 +34,8 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'rest_framework',
     'rest_framework_simplejwt',
+    'cloudinary_storage',
+    'cloudinary',
     'accounts',
     'package',
     'corsheaders',
@@ -57,7 +59,7 @@ ROOT_URLCONF = 'Travaline.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': ['package/payment_file'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -86,6 +88,26 @@ DATABASES = {
         'PORT': '5432', 
     }
 }
+
+
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_ALLOWED_FORMATS = [
+    'jpg', 'jpeg', 'png', 'gif',  # Add other image formats as needed
+    'pdf', 'doc', 'docx',         # Add DOC and PDF formats
+]
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': os.getenv('CLOUD_NAME'),
+    'API_KEY': os.getenv('API_KEY'),
+    'API_SECRET': os.getenv('API_SECRET'),
+}
+CLOUDINARY_URL=os.getenv('CLOUDINARY_URL')
 
 
 
@@ -124,6 +146,7 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
@@ -152,6 +175,8 @@ REST_FRAMEWORK = {
 
 RAZOR_KEY_ID = os.getenv('RAZOR_KEY_ID')
 RAZOR_KEY_SECRET = os.getenv('RAZOR_KEY_SECRET')
+
+
 
 
 SIMPLE_JWT = {

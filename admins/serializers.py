@@ -6,6 +6,7 @@ from package.models import Booking,Package
 
 
 class BlogSerializer(serializers.ModelSerializer):
+
   
     class Meta:
       model = Blog
