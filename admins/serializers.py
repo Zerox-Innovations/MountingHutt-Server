@@ -6,10 +6,14 @@ from package.models import Booking,Package
 
 
 class BlogSerializer(serializers.ModelSerializer):
-  
     class Meta:
-      model = Blog
-      fields = '__all__'
+        model = Blog
+        fields = ['id', 'title', 'image']  
+
+class BlogDetailSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Blog
+        fields = '__all__' 
       
       
 

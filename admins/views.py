@@ -6,6 +6,7 @@ from rest_framework import viewsets
 from admins.models import Blog,Activities,Food,Room
 from admins.serializers import (
     BlogSerializer,
+    BlogDetailSerializer,
     CustomUserSerializer,
     AdminBookingListSerializer,
     ActivitySerializer,ActivityRetriveSerializer,AdminFoodSerializer,
@@ -47,7 +48,21 @@ class UserListAPIView(APIView):
 
 class BlogViewset(viewsets.ModelViewSet):
     queryset = Blog.objects.all()
-    serializer_class = BlogSerializer
+
+    def get_serializer_class(self):
+        if self.action == 'retrieve':  # For detailed view (GET a specific blog)
+            return BlogDetailSerializer
+        return BlogSerializer  # For list view (GET all blogs)
+
+    def list(self, request, *args, **kwargs):
+        queryset = self.get_queryset()
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        serializer = self.get_serializer(instance)
+        return Response(serializer.data)  
 
 
 

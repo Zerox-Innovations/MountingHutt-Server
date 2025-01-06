@@ -54,7 +54,7 @@ class BookingView(APIView):
 
     def post(self,request, *args, **kwargs):
 
-        package_id = request.GET.get('package_id')
+        package_id = request.data.get('package_id')
         if not package_id:
             return Response({'Msg': "Enter the package_id"}, status=status.HTTP_404_NOT_FOUND)
         
