@@ -3,8 +3,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.views import APIView
 from package.serializers import (
-    PackageListSerializer,BookingRetriveSerializer,BookingSerializer,
-    BookingListSerializer,BookingUpdateSerializer
+    PackageListSerializer,PackageRetriveForBookingSerializer,BookingSerializer,
+    BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer
 )
 from package.models import Package,Booking,Payment
 from rest_framework import viewsets
@@ -49,7 +49,7 @@ class BookingView(APIView):
         
         try:
             package = Package.objects.get(id = package_id)
-            serializer = BookingRetriveSerializer(package)
+            serializer = PackageRetriveForBookingSerializer(package)
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Package.DoesNotExist:
             return Response({"Msg":'Package not found'},status=status.HTTP_404_NOT_FOUND)
@@ -116,7 +116,7 @@ class BookingView(APIView):
                 "advance_amount": queryset.advance_amount,
                 "balance_amount": queryset.balance_amount,
                 "status": queryset.status,
-                "booking_date": queryset.booking_date,
+                "booking_date": queryset.created_at,
                 "travel_end_date":queryset.travel_end_date,
                 "serializer":response_serializer.data
             }
@@ -124,6 +124,27 @@ class BookingView(APIView):
             return Response(response_data, status=status.HTTP_201_CREATED)
     
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+    
+
+class CheckoutView(APIView):
+    permission_classes = [IsAuthenticated] 
+    def get(self,request,*args,**kwargs):
+
+        booking_id = request.GET.get('booking_id')
+        if not booking_id:
+            return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            booking_id = uuid.UUID(booking_id)  # This ensures the booking_id is a valid UUID
+        except ValueError:
+            return Response({'Msg': "booking_id must be a valid UUID"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user_booking = Booking.objects.get(user = request.user,id=booking_id)
+            serializer = BookingCheckoutSerializer(user_booking)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Booking.DoesNotExist:
+            return Response({"Msg":'Booking not found'},status=status.HTTP_404_NOT_FOUND)
+
 
 
 class BookingGetAndUpdateView(APIView):
@@ -155,9 +176,9 @@ class BookingGetAndUpdateView(APIView):
             return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_404_NOT_FOUND)
         
         try:
-            booking_id = int(booking_id)
-        except (ValueError, TypeError):
-            return Response({'Msg': "booking_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+            booking_id = uuid.UUID(booking_id)  # This ensures the booking_id is a valid UUID
+        except ValueError:
+            return Response({'Msg': "booking_id must be a valid UUID"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
             usr_booking = Booking.objects.get(user = request.user,id=booking_id)
@@ -186,9 +207,9 @@ class PaymentView(APIView):
             return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
-            booking_id = int(booking_id)
-        except (ValueError, TypeError):
-            return Response({'Msg': "booking_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+            booking_id = uuid.UUID(booking_id)  # This ensures the booking_id is a valid UUID
+        except ValueError:
+            return Response({'Msg': "booking_id must be a valid UUID"}, status=status.HTTP_400_BAD_REQUEST)
         
         try:
             booking = Booking.objects.get(id=booking_id, user=user)

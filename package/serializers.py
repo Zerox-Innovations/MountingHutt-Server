@@ -40,17 +40,25 @@ class PackageDetailSerializer(serializers.ModelSerializer):
         return package
 
 
+
+
+
 # Bokking Retrive
-class BookingRetriveSerializer(serializers.ModelSerializer):
+class PackageRetriveForBookingSerializer(serializers.ModelSerializer):
     
 
     class Meta:
         model = Package
         fields = ['id','title','price','days','nights','min_members','max_members']
 
+
+
+
+
+
 # Booking Creation
 class BookingSerializer(serializers.ModelSerializer):
-    package_data = BookingRetriveSerializer(source='booking_package', read_only=True)
+    package_data = PackageRetriveForBookingSerializer(source='booking_package', read_only=True)
     
     class Meta:
         model = Booking
@@ -65,18 +73,47 @@ class BookingSerializer(serializers.ModelSerializer):
             if data['travel_start_date'] > data['travel_end_date']:
                 raise serializers.ValidationError("Travel start date must be before the end date.")
         return data
-    
 
-# Booking List
-class BookingListSerializer(serializers.ModelSerializer):
-    package_data = BookingRetriveSerializer(source='booking_package', read_only=True)
+
+
+
+
+
+# Booking Checkout
+class BookingCheckoutSerializer(serializers.ModelSerializer):
+    package_data = PackageRetriveForBookingSerializer(source='booking_package', read_only=True)
 
     class Meta:
         model = Booking
         fields = ['id','package_data','travel_start_date','travel_end_date','number_of_travelers',
-                  'booking_date','total_amount','payable_amount','advance_amount','balance_amount',
+                  'created_at','total_amount','payable_amount','advance_amount','balance_amount',
+                  'pro_noun','first_name','last_name','zip_code',
                   'contact_number','email','status']
         
+
+
+
+
+
+
+
+
+# Booking List
+class BookingListSerializer(serializers.ModelSerializer):
+    package_data = PackageRetriveForBookingSerializer(source='booking_package', read_only=True)
+
+    class Meta:
+        model = Booking
+        fields = ['id','package_data','travel_start_date','travel_end_date','number_of_travelers',
+                  'created_at','total_amount','payable_amount','advance_amount','balance_amount',
+                  'contact_number','email','status']
+        
+
+
+
+
+
+
 
 
 # Booking updation
@@ -86,12 +123,12 @@ class BookingDetailsSerializer(serializers.ModelSerializer):
     """
     class Meta:
         model = Booking
-        fields = ['booking_date', 'total_amount','payable_amount','advance_amount','balance_amount','status']
+        fields = ['created_at', 'total_amount','payable_amount','advance_amount','balance_amount','status']
         read_only_fields = fields
 
 
 class BookingUpdateSerializer(serializers.ModelSerializer):
-    package_data = BookingRetriveSerializer(source='booking_package', read_only=True)
+    package_data = PackageRetriveForBookingSerializer(source='booking_package', read_only=True)
     booking_data = BookingDetailsSerializer(source='*', read_only=True) 
 
     class Meta:

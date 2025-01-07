@@ -34,7 +34,7 @@ class Booking(models.Model):
     id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="customuser")
     booking_package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name="package")
-    booking_date = models.DateTimeField(auto_now_add=True)
+    created_at = models.DateTimeField(auto_now_add=True)
     travel_start_date = models.DateField()
     travel_end_date = models.DateField()
     number_of_travelers = models.PositiveIntegerField(default=1)
