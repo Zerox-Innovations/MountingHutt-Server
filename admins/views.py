@@ -68,7 +68,7 @@ class BlogViewset(viewsets.ModelViewSet):
 
 
 class AdminBookingListView(APIView):
-
+    permission_classes = [IsAdminUser] 
     def get(self,request,*args,**kwargs):
 
         try:
@@ -87,7 +87,7 @@ class AdminBookingListView(APIView):
 
 
 class AdminDashboardView(APIView):
-
+    permission_classes = [IsAdminUser] 
     def get(self,request,*args,**kwargs):
 
         try:
@@ -115,7 +115,7 @@ class AdminDashboardView(APIView):
 
 
 class AdminActivityView(APIView):
-
+    permission_classes = [IsAdminUser] 
     def post(self,request,*args,**kwargs):
 
         serializer = ActivitySerializer(data= request.data)
@@ -138,7 +138,7 @@ class AdminActivityView(APIView):
 
 
     def get(self,request,*args,**kwargs):
-
+        
         try:
             queryset = Activities.objects.all()
             serializer = ActivityRetriveSerializer(queryset,many=True)
@@ -197,7 +197,7 @@ class AdminActivityView(APIView):
                 
 
 class AdminFoodView(APIView):
-
+    permission_classes = [IsAdminUser] 
     def post(self,request,*args,**kwargs):
 
         serializer = AdminFoodSerializer(data = request.data)
@@ -279,7 +279,7 @@ class AdminFoodView(APIView):
 
 
 class AdminRoomView(APIView):
-
+    permission_classes = [IsAdminUser] 
     def post(self,request,*arg,**kwargs):
 
         serializer = AdminRoomSerializer(data = request.data)
