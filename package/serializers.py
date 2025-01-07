@@ -110,10 +110,9 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
         instance.contact_number = validated_data.get('contact_number', instance.contact_number)
         instance.email = validated_data.get('email', instance.email)
 
-        new_travelers = validated_data.get('number_of_travelers',0)
-        if new_travelers:
-            updated_travelers = new_travelers + instance.number_of_travelers
-
+        updated_travelers = validated_data.get('number_of_travelers',instance.number_of_travelers)
+        if updated_travelers:
+            
             min_members = booking_package.min_members
             if updated_travelers < min_members:
                 raise ValidationError({"Msg": f"Should have a minimum of {min_members} members"})
