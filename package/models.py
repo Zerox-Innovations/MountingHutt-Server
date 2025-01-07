@@ -1,10 +1,11 @@
 from django.db import models
 from accounts.models import CustomUser
+import uuid
 
 class Package(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(max_length=500)
-    banner_image = models.ImageField(null=True,blank=True)   
+    banner_image = models.ImageField(upload_to='package',null=True,blank=True)   
     days = models.PositiveIntegerField(default=1)
     nights = models.PositiveIntegerField(default=1)
     min_members = models.PositiveBigIntegerField(null=True,blank=True)
@@ -30,6 +31,7 @@ class DayDetail(models.Model):
 
 class Booking(models.Model):
 
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
     user = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name="customuser")
     booking_package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name="package")
     booking_date = models.DateTimeField(auto_now_add=True)
