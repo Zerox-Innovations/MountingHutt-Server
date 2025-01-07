@@ -75,8 +75,6 @@ class BookingView(APIView):
 
 
             number_of_travelers = serializer.validated_data.get('number_of_travelers')
-            # if number_of_travelers < min_members :
-            #     return Response({"Msg":f'Should have Minimum {min_members} members'})
             
             max_members = booking_package.max_members
             if max_members is not None and number_of_travelers > max_members:
@@ -92,7 +90,7 @@ class BookingView(APIView):
             balance_amount = payable_amount - advance_amount
 
             queryset = Booking.objects.create(
-                id=uuid.uuid4(), 
+                id=uuid.uuid4(),
                 user = request.user,
                 booking_package = booking_package,
                 travel_start_date = travel_start_date,
@@ -127,15 +125,24 @@ class BookingView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class BookingListAndUpdateView(APIView):
+class BookingGetAndUpdateView(APIView):
     permission_classes = [IsAuthenticated] 
     def get(self,request,*args,**kwargs):
+
+        booking_id = request.GET.get('booking_id')
+        if not booking_id:
+            return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_404_NOT_FOUND)
+        
         try:
-            user_bookings = Booking.objects.filter(user = request.user)
-            serializer = BookingListSerializer(user_bookings,many = True)
+            booking_id = uuid.UUID(booking_id)  # This ensures the booking_id is a valid UUID
+        except ValueError:
+            return Response({'Msg': "booking_id must be a valid UUID"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            user_booking = Booking.objects.get(user = request.user,id=booking_id)
+            serializer = BookingListSerializer(user_booking)
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Booking.DoesNotExist:
-            return Response({"Msg":'You did/nt any booking till now'},status=status.HTTP_404_NOT_FOUND)
+            return Response({"Msg":'Booking not found'},status=status.HTTP_404_NOT_FOUND)
         
 
 
@@ -152,8 +159,8 @@ class BookingListAndUpdateView(APIView):
             return Response({'Msg': "booking_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
 
         try:
-            usr_bookings = Booking.objects.get(user = request.user,id=booking_id)
-            serializer = BookingUpdateSerializer(usr_bookings,data=request.data,partial=True)
+            usr_booking = Booking.objects.get(user = request.user,id=booking_id)
+            serializer = BookingUpdateSerializer(usr_booking,data=request.data,partial=True)
             if serializer.is_valid():
                 serializer.save()
                 return Response(serializer.data)

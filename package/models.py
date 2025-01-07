@@ -6,7 +6,7 @@ import uuid
 class Package(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(max_length=500)
-    banner_image = models.ImageField(null=True,blank=True)   
+    banner_image = models.ImageField(upload_to='package',null=True,blank=True)   
     days = models.PositiveIntegerField(default=1)
     nights = models.PositiveIntegerField(default=1)
     min_members = models.PositiveBigIntegerField(null=True,blank=True)

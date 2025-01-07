@@ -110,34 +110,35 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
         instance.contact_number = validated_data.get('contact_number', instance.contact_number)
         instance.email = validated_data.get('email', instance.email)
 
-        new_travelers = validated_data.get('number_of_travelers', instance.number_of_travelers)
-        updated_travelers = new_travelers + instance.number_of_travelers
+        updated_travelers = validated_data.get('number_of_travelers',instance.number_of_travelers)
+        if updated_travelers:
+            
+            min_members = booking_package.min_members
+            if updated_travelers < min_members:
+                raise ValidationError({"Msg": f"Should have a minimum of {min_members} members"})
+            max_members = booking_package.max_members
+            if max_members is not None and updated_travelers > max_members:
+                raise ValidationError({"Msg": f"The maximum number of members allowed is {max_members}"})
+            
+            base_price = booking_package.price
+            updated_total_amount = base_price * updated_travelers
+            instance.total_amount = updated_total_amount
 
-        min_members = booking_package.min_members
-        if updated_travelers < min_members:
-            raise ValidationError({"Msg": f"Should have a minimum of {min_members} members"})
-        max_members = booking_package.max_members
-        if max_members is not None and updated_travelers > max_members:
-            raise ValidationError({"Msg": f"The maximum number of members allowed is {max_members}"})
+            decrement = (updated_travelers) * 200 if updated_travelers > 4 else 0
+            updated_payable_amount = updated_total_amount - decrement
+            instance.payable_amount = updated_payable_amount
 
-        base_price = booking_package.price
-        updated_total_amount = base_price * updated_travelers
-        instance.total_amount = updated_total_amount
+            # Ensure advance_amount is valid
+            updated_advance = round(updated_payable_amount * 0.4)
+            
+            # Calculate balance_amount
 
-        decrement = (updated_travelers - 4) * 200 if updated_travelers > 4 else 0
-        updated_payable_amount = updated_total_amount - decrement
-        instance.payable_amount = updated_payable_amount
+            updated_balance = updated_payable_amount - updated_advance
 
-        # Ensure advance_amount is valid
-        calculated_advance = round(updated_payable_amount * 0.4)
-        if calculated_advance < 0:
-            raise ValidationError({"Msg": "Advance amount cannot be negative"})
-        instance.advance_amount = calculated_advance
+            instance.advance_amount = updated_advance
+            instance.balance_amount = updated_balance
 
-        # Calculate balance_amount
-        instance.balance_amount = updated_payable_amount - instance.advance_amount
-
-        instance.number_of_travelers = updated_travelers
+            instance.number_of_travelers = updated_travelers
         instance.save()
         return instance
 

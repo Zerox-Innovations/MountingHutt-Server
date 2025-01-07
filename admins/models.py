@@ -5,8 +5,8 @@ from django.db import models
 
 class Blog(models.Model):
     image = models.ImageField(upload_to='blogs',blank=True,null=True)
-    title = models.CharField(max_length=50)
-    description = models.TextField(blank=True,null=True)
+    title = models.CharField(max_length=150)
+    description = models.TextField(max_length=250,blank=True,null=True)
     created_at = models.DateTimeField(auto_now_add=True) 
 
     def __str__(self):
@@ -17,7 +17,7 @@ class Blog(models.Model):
 class Activities(models.Model):
 
     activity = models.CharField(max_length=250)
-    image = models.ImageField(upload_to='media',blank=True,null=True)
+    image = models.ImageField(upload_to='activities',blank=True,null=True)
     description = models.TextField(max_length=250,blank=True,null=True)
     price = models.PositiveIntegerField()
 
@@ -40,7 +40,7 @@ class Item_category(models.Model):
 class Food(models.Model):
 
     item = models.CharField(max_length=250,null=True,blank=True)
-    image = models.ImageField(upload_to='media',blank=True,null=True)
+    image = models.ImageField(upload_to='food',blank=True,null=True)
     description = models.TextField(max_length=250,blank=True,null=True)
     time = models.ForeignKey(Item_category,on_delete=models.CASCADE,related_name='foodtime',blank=True,null=True)
     category = models.CharField(max_length=20,choices=[('Veg','Veg'),('Non-Veg','Non-Veg'),
@@ -55,7 +55,7 @@ class Food(models.Model):
 class Room(models.Model):
 
     room_name = models.CharField(max_length=250)
-    image = models.ImageField(upload_to='media',null=True,blank=True)
+    image = models.ImageField(upload_to='room',null=True,blank=True)
     capacity = models.PositiveIntegerField()
     description = models.TextField(max_length=250)
     price = models.PositiveIntegerField()
