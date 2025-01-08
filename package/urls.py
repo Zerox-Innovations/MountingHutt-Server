@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from package.views import (
     PackageViewset,
-    BookingView,CheckoutView,BookingGetAndUpdateView,PaymentView,payment_success_view,razorpay_webhook
+    BookingView,CheckoutView,BookingGetAndUpdateView,
 )
 
 
@@ -17,7 +17,5 @@ urlpatterns = [
     path('booking/',BookingView.as_view(),name='booking'),
     path('checkout/',CheckoutView.as_view(),name='checkout'),
     path('bookings/',BookingGetAndUpdateView.as_view(),name='bookings'),
-    path('payment/',PaymentView.as_view(),name='payment'),
-    path('payment-success/', payment_success_view, name='payment_success'),
-    path('razorpay-webhook/', razorpay_webhook, name='razorpay_webhook'),
+
 ]

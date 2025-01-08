@@ -7,7 +7,8 @@ urlpatterns = [
     path('accounts/',include('accounts.urls')),
     path('package/',include('package.urls')),
     path('admins/',include('admins.urls')),
-    path('users/',include('users.urls'))
+    path('users/',include('users.urls')),
+    path('payment/',include('payment.urls'))
 ]
 from django.conf import settings
 from django.conf.urls.static import static
