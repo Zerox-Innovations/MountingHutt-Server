@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from package.models import Package,DayDetail,Booking,Payment
+from package.models import Package,DayDetail,Booking
 from rest_framework.exceptions import ValidationError
 from datetime import timedelta
 
@@ -117,6 +117,10 @@ class BookingListSerializer(serializers.ModelSerializer):
 
 
 # Booking updation
+class NonRefundableAdvanceError(Exception):
+    pass
+
+
 class BookingDetailsSerializer(serializers.ModelSerializer):
     """
     This nested serializer provides read-only access to specific details about a booking.
@@ -163,15 +167,22 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
 
             decrement = (updated_travelers) * 200 if updated_travelers > 4 else 0
             updated_payable_amount = updated_total_amount - decrement
-            instance.payable_amount = updated_payable_amount
+            
 
             # Ensure advance_amount is valid
             updated_advance = round(updated_payable_amount * 0.4)
-            
+            if updated_advance < instance.advance_amount:
+                canceled_Members = instance.number_of_travelers - updated_travelers
+                not_refund = round((instance.payable_amount * 0.4) / instance.number_of_travelers * canceled_Members)
+                
+
+                raise NonRefundableAdvanceError(
+                f'Advance is already paid. Canceled Members Advance amount: {not_refund} is not refundable')
             # Calculate balance_amount
 
             updated_balance = updated_payable_amount - updated_advance
 
+            instance.payable_amount = updated_payable_amount
             instance.advance_amount = updated_advance
             instance.balance_amount = updated_balance
 
@@ -182,9 +193,3 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
     
 
 
-
-class PaymentSerializer(serializers.ModelSerializer):
-
-    class Meta :
-        model = Payment
-        fields = []
