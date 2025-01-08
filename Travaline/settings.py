@@ -40,7 +40,8 @@ INSTALLED_APPS = [
     'package',
     'corsheaders',
     'admins',
-    'users'
+    'users',
+    'payment',
 ]
 
 MIDDLEWARE = [
@@ -59,7 +60,7 @@ ROOT_URLCONF = 'Travaline.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['package/payment_file'],
+        'DIRS': ['payment/payment_file'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
