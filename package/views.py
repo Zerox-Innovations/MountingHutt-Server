@@ -128,7 +128,7 @@ class BookingView(APIView):
 
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated] 
-    def get(self,request,*args,**kwargs):
+    def get(self,request,booking_id=None, *args,**kwargs):
 
         booking_id = request.GET.get('booking_id')
         if not booking_id:
@@ -197,7 +197,7 @@ class BookingGetAndUpdateView(APIView):
 razorpay_client = razorpay.Client(auth=(settings.RAZOR_KEY_ID, settings.RAZOR_KEY_SECRET))
 
 class PaymentView(APIView):
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAuthenticated]
     
     def post(self, request, *args, **kwargs):
         user = request.user
