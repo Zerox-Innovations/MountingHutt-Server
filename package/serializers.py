@@ -15,7 +15,9 @@ class PackageListSerializer(serializers.ModelSerializer):
     
     class Meta:
       model = Package
+
       fields = ['id','title', 'description', 'days', 'nights', 'price','day_details']
+
       
       
       

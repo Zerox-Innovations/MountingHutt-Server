@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 import os
 
 
-load_dotenv(".venv")
+load_dotenv()
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -110,7 +110,7 @@ CLOUDINARY_STORAGE = {
 }
 CLOUDINARY_URL=os.getenv('CLOUDINARY_URL')
 
-
+# APPEND_SLASH=False
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
