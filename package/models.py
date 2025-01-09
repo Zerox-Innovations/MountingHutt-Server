@@ -1,12 +1,12 @@
 from django.db import models
 from accounts.models import CustomUser
-import uuid 
+import uuid
+from cloudinary.models import CloudinaryField
 
 
 class Package(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField(max_length=500)
-    banner_image = models.ImageField(upload_to='package',null=True,blank=True)   
+    description = models.TextField(max_length=500) 
     days = models.PositiveIntegerField(default=1)
     nights = models.PositiveIntegerField(default=1)
     min_members = models.PositiveBigIntegerField(null=True,blank=True)
@@ -19,6 +19,14 @@ class Package(models.Model):
     def __str__(self):
         return self.title
       
+class PackageImage(models.Model):
+    package = models.ForeignKey(Package, related_name="images", on_delete=models.CASCADE)
+    image = CloudinaryField("image") 
+    alt_text = models.CharField(max_length=255, blank=True, null=True)
+
+    def _str_(self):
+        return f"Image for {self.package.title}"
+
 
 class DayDetail(models.Model):
     package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name='day_details')
