@@ -60,7 +60,7 @@ ROOT_URLCONF = 'Travaline.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['payment/payment_file'],
+        'DIRS': [BASE_DIR /'payment/payment_file'],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [

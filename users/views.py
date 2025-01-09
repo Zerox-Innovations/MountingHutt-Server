@@ -1,7 +1,8 @@
 from django.shortcuts import render
 from rest_framework.views import APIView
 from admins.models import Activities,Food,Room
-from users.serializers import UserActivitySerializer,UserFoodSerializer,UserRoomSerializer
+from package.models import Booking
+from users.serializers import UserActivitySerializer,UserFoodSerializer,UserRoomSerializer,BookingHistorySerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
@@ -45,3 +46,15 @@ class UserRoomView(APIView):
         except Room.DoesNotExist:
             return Response({"Msg":'Rooms not found'},status=status.HTTP_404_NOT_FOUND)
 
+
+class BookingHistoryView(APIView):
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        try:
+            # Assuming the Booking model has a ForeignKey to the User model named 'user'
+            history = Booking.objects.filter(user=user)
+            serializer = BookingHistorySerializer(history, many=True)
+            return Response(serializer.data)
+        except Booking.DoesNotExist:
+            return Response({"Msg": 'Not found'})

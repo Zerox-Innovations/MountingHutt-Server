@@ -59,7 +59,8 @@ class PaymentView(APIView):
                     "email": user.email
                 },
                 "reminder_enable": True ,
-                "callback_url": "http://127.0.0.1:8000/payment-success/",  # Replace with your actual domain and success URL
+                "callback_url": "http://127.0.0.1:8000/payment/payment-success/",
+  # Replace with your actual domain and success URL
                 "callback_method": "get"  # or "post"
             })
 
@@ -92,20 +93,34 @@ class PaymentView(APIView):
 from django.shortcuts import render
 from django.http import HttpResponse
 
-def payment_success_view(request):
-    payment_id = request.GET.get('razorpay_payment_id', None)
-    status = request.GET.get('status', None)
+from django.views import View
+from django.http import HttpResponse
+from django.shortcuts import render
+import razorpay
+from dotenv import load_dotenv
+import os
+import razorpay
 
-    if not payment_id or status != "captured":
-        return HttpResponse("Payment unsuccessful. Please try again.", status=400)
+class PaymentSuccessView(View):
+    def get(self, request, *args, **kwargs):
+        payment_id = request.GET.get('razorpay_payment_id')
+        status = request.GET.get('razorpay_payment_link_status')
 
-    # Optional: Verify the payment details using Razorpay's API if required
-    # payment_details = razorpay_client.payment.fetch(payment_id)
+        if not payment_id or status != "paid":
+            return HttpResponse("Payment unsuccessful. Please try again.", status=400)
+        payment_status = Payment.objects.get(payment_status)
+        payment_status.payment_status = "paid"
+        # Optional: Verify the payment details using Razorpay's API if required
+        # payment_details = razorpay_client.payment.fetch(payment_id)
 
-    return render(request, 'razpayment.html', {
-        "payment_id": payment_id,
-        "status": status
-    })
+        return render(request, 'razpayment.html', {
+            "payment_id": payment_id,
+            "status": status
+        })
+
+
+
+
 
 
 
