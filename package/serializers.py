@@ -1,13 +1,13 @@
 from rest_framework import serializers
-from package.models import Package,DayDetail,Booking
+from package.models import Package,DayDetail,Booking,PackageImage
 from rest_framework.exceptions import ValidationError
 from datetime import timedelta
-
+from rest_framework.response import Response
 
 class DayDetailSerializer(serializers.ModelSerializer):
     class Meta:
       model = DayDetail
-      fields = ('package','day_number', 'description')
+      fields = ['package','day_number', 'description']
       
 
 class PackageListSerializer(serializers.ModelSerializer):
@@ -15,7 +15,7 @@ class PackageListSerializer(serializers.ModelSerializer):
     
     class Meta:
       model = Package
-      fields = ('id','title', 'description', 'days', 'nights', 'price','day_details')
+      fields = ['id','title', 'description', 'days', 'nights', 'price','day_details']
       
       
       
@@ -24,7 +24,7 @@ class PackageDetailSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Package
-        fields = ('id', 'title', 'description', 'days', 'nights', 'price', 'day_details')
+        fields = ['id', 'title', 'description', 'days', 'nights', 'price', 'day_details']
 
     def create(self, validated_data):
         # Extract day_details from validated_data
@@ -38,6 +38,64 @@ class PackageDetailSerializer(serializers.ModelSerializer):
             DayDetail.objects.create(package=package, **day_detail_data)
         
         return package
+
+
+
+# packge image creation
+class PackgeImageSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = PackageImage
+        fields = ['image', 'alt_text']
+
+    def create(self, validated_data):
+        # Get the package from context
+        package = self.context.get('package')
+
+        validated_data.pop('package', None)
+
+        return PackageImage.objects.create(package=package, **validated_data)
+
+
+
+# Packge image List
+class PackageTitleSerializer(serializers.ModelSerializer):
+
+    
+    class Meta:
+      model = Package
+      fields = ['title']
+      
+class PackgeImageListSerializer(serializers.ModelSerializer):
+    package_data = PackageTitleSerializer(source='package', read_only=True)
+    class Meta:
+        model = PackageImage
+        fields = ['package','package_data','image', 'alt_text']
+
+
+
+# packge image Get and update
+class PackgeImageGetUpdateSerializer(serializers.ModelSerializer):
+    package_data = PackageTitleSerializer(source='package', read_only=True)
+    class Meta:
+        model = PackageImage
+        fields = ['package','package_data','image', 'alt_text']
+
+
+    def update(self, instance, validated_data):
+        package = validated_data.get('package',instance.package)
+        image = validated_data.get('image',instance.image)
+        alt_text = validated_data.get('alt_text',instance.alt_text)
+
+        instance.package = package
+        instance.image = image
+        instance.alt_text = alt_text
+
+        instance.save()
+
+        return instance
+
+
+
 
 
 
@@ -63,8 +121,7 @@ class BookingSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = ['id','travel_start_date',
-                  'number_of_travelers','first_name','last_name','zip_code','contact_number','pro_noun',
-                  'email','package_data']
+                  'number_of_travelers','package_data']
         
 
     def validate(self, data):
@@ -80,17 +137,46 @@ class BookingSerializer(serializers.ModelSerializer):
 
 
 # Booking Checkout
+
+class UserDetailsCheckoutSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Booking
+        fields = ['pro_noun', 'first_name', 'last_name', 'zip_code',
+                  'contact_number', 'email']
+
+
 class BookingCheckoutSerializer(serializers.ModelSerializer):
+    user_details = UserDetailsCheckoutSerializer(write_only=True)  # Nested serializer for creating user details
+    user_details_response = UserDetailsCheckoutSerializer(source='*', read_only=True)  # Used for the response
     package_data = PackageRetriveForBookingSerializer(source='booking_package', read_only=True)
 
     class Meta:
         model = Booking
-        fields = ['id','package_data','travel_start_date','travel_end_date','number_of_travelers',
-                  'created_at','total_amount','payable_amount','advance_amount','balance_amount',
-                  'pro_noun','first_name','last_name','zip_code',
-                  'contact_number','email','status']
-        
+        fields = [
+            'id', 'travel_start_date', 'travel_end_date', 'number_of_travelers',
+            'created_at', 'total_amount', 'payable_amount', 'advance_amount',
+            'balance_amount', 'status', 'user_details','user_details_response','package_data'
+        ]
 
+    def update(self, instance, validated_data):
+        # Extract and pop user details if present
+        user_details_data = validated_data.pop('user_details', None)
+
+        # Update the Booking instance
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+
+        # Handle user details if provided
+        if user_details_data:
+            user_details_instance = UserDetailsCheckoutSerializer(instance=instance, data=user_details_data)
+            if user_details_instance.is_valid():
+                user_details_instance.save()
+
+        return instance
+
+
+        
 
 
 
@@ -101,6 +187,7 @@ class BookingCheckoutSerializer(serializers.ModelSerializer):
 # Booking List
 class BookingListSerializer(serializers.ModelSerializer):
     package_data = PackageRetriveForBookingSerializer(source='booking_package', read_only=True)
+    
 
     class Meta:
         model = Booking
@@ -175,10 +262,8 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
                 canceled_Members = instance.number_of_travelers - updated_travelers
                 not_refund = round((instance.payable_amount * 0.4) / instance.number_of_travelers * canceled_Members)
                 
-
-                raise NonRefundableAdvanceError(
-                f'Advance is already paid. Canceled Members Advance amount: {not_refund} is not refundable')
-            # Calculate balance_amount
+                
+                
 
             updated_balance = updated_payable_amount - updated_advance
 

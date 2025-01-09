@@ -4,9 +4,10 @@ from rest_framework import status
 from rest_framework.views import APIView
 from package.serializers import (
     PackageListSerializer,PackageRetriveForBookingSerializer,BookingSerializer,
-    BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer
+    BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer,PackgeImageSerializer,
+    PackgeImageListSerializer,PackgeImageGetUpdateSerializer
 )
-from package.models import Package,Booking
+from package.models import Package,Booking,PackageImage
 from rest_framework import viewsets
 from datetime import timedelta
 import razorpay
@@ -28,6 +29,83 @@ class PackageViewset(viewsets.ModelViewSet):
         self.perform_update(serializer)
         return Response(serializer.data)
 
+class PackageImageView(APIView):
+
+    def post(self,request,*args,**kwargs):
+        package_id = request.GET.get('package_id')
+        if not package_id:
+            return Response({'Msg': "Enter the package_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            package_id = int(package_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "package_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        
+        try:
+            package = Package.objects.get(id = package_id)
+            pass
+        except Package.DoesNotExist:
+            return Response({"Msg":'Package noy found'})
+        serializer = PackgeImageSerializer(data=request.data, context={'package': package})
+
+        if serializer.is_valid():
+            # Save the image and package
+            serializer.save(package=package)
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+    def get(self,request,*args,**keargs):
+
+        try:
+            image = PackageImage.objects.all()
+            serializer= PackgeImageListSerializer(image,many = True)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except Package.DoesNotExist:
+            return Response({"Msg":'Packges not found'},status=status.HTTP_404_NOT_FOUND)
+
+
+
+class PackgeImageRetriveUpdateView(APIView):
+
+    def get(self,request,*args,**keargs):
+
+        image_id = request.GET.get('image_id')
+        if not image_id:
+            return Response({'Msg': "Enter the image_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            image_id = int(image_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "image_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            image = PackageImage.objects.get(id = image_id)
+            serializer = PackgeImageGetUpdateSerializer(image)
+            return Response(serializer.data,status=status.HTTP_200_OK)
+        except PackageImage.DoesNotExist:
+            return Response({"Msg":'Package image not found'},status=status.HTTP_404_NOT_FOUND)
+    
+    def put(self,request,*args,**keargs):
+
+        image_id = request.GET.get('image_id')
+        if not image_id:
+            return Response({'Msg': "Enter the image_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            image_id = int(image_id)
+        except (ValueError, TypeError):
+            return Response({'Msg': "image_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
+        try:
+            image = PackageImage.objects.get(id = image_id)
+            serializer = PackgeImageGetUpdateSerializer(image,data = request.data,partial = True)
+            if serializer.is_valid():
+                serializer.save()
+            return Response(serializer.data,status=status.HTTP_201_CREATED)
+        except PackageImage.DoesNotExist:
+            return Response({"Msg":'Packge image not found'})
+        
 
 
 
@@ -103,12 +181,6 @@ class BookingView(APIView):
                 payable_amount = payable_amount,
                 advance_amount = advance_amount,
                 balance_amount = balance_amount,
-                first_name = serializer.validated_data.get('first_name'),
-                last_name = serializer.validated_data.get('last_name'),
-                zip_code = serializer.validated_data.get('zip_code'),
-                pro_noun = serializer.validated_data.get('pro_noun'),
-                contact_number = serializer.validated_data.get('contact_number'),
-                email = serializer.validated_data.get('email'),
                 
             )
             response_serializer = BookingSerializer(queryset)
@@ -146,6 +218,28 @@ class CheckoutView(APIView):
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Booking.DoesNotExist:
             return Response({"Msg":'Booking not found'},status=status.HTTP_404_NOT_FOUND)
+
+    def put(self,request,*args,**kwargs):
+
+        booking_id = request.GET.get('booking_id')
+        if not booking_id:
+            return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_404_NOT_FOUND)
+        
+        try:
+            booking_id = uuid.UUID(booking_id)  # This ensures the booking_id is a valid UUID
+        except ValueError:
+            return Response({'Msg': "booking_id must be a valid UUID"}, status=status.HTTP_400_BAD_REQUEST)
+        
+        try:
+            user_booking = Booking.objects.get(user = request.user,id=booking_id)
+            serializer = BookingCheckoutSerializer(user_booking,data = request.data,partial = True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data,status=status.HTTP_201_CREATED)
+            return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        except Booking.DoesNotExist:
+            return Response({"Msg":'User Booking not found'},status=status.HTTP_404_NOT_FOUND)
+
 
 
 

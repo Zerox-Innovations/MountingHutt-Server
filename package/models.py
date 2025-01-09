@@ -1,11 +1,11 @@
 from django.db import models
 from accounts.models import CustomUser
 import uuid
+from cloudinary.models import CloudinaryField
 
 class Package(models.Model):
     title = models.CharField(max_length=255)
-    description = models.TextField(max_length=500)
-    banner_image = models.ImageField(upload_to='package',null=True,blank=True)   
+    description = models.TextField(max_length=500) 
     days = models.PositiveIntegerField(default=1)
     nights = models.PositiveIntegerField(default=1)
     min_members = models.PositiveBigIntegerField(null=True,blank=True)
@@ -18,6 +18,14 @@ class Package(models.Model):
     def __str__(self):
         return self.title
       
+class PackageImage(models.Model):
+    package = models.ForeignKey(Package, related_name="images", on_delete=models.CASCADE)
+    image = CloudinaryField("image") 
+    alt_text = models.CharField(max_length=255, blank=True, null=True)
+
+    def _str_(self):
+        return f"Image for {self.package.title}"
+
 
 class DayDetail(models.Model):
     package = models.ForeignKey(Package, on_delete=models.CASCADE, related_name='day_details')
@@ -48,8 +56,8 @@ class Booking(models.Model):
     last_name = models.CharField(max_length=250,null=True,blank=True)
     zip_code = models.CharField(max_length=15,null=True,blank=True)
     pro_noun = models.CharField(max_length=20, choices=[('Mr', 'Mr'),('Mrs', 'mrs')],null=True,blank=True)
-    contact_number = models.CharField(max_length=15)
-    email = models.EmailField()
+    contact_number = models.CharField(max_length=15,null=True,blank=True)
+    email = models.EmailField(null=True,blank=True)
     razorpay_order_id = models.CharField(null=True,blank=True)
 
     def __str__(self):
