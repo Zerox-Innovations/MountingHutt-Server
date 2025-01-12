@@ -213,6 +213,7 @@ class CheckoutView(APIView):
         try:
             user_booking = Booking.objects.get(user = request.user,id=booking_id)
             serializer = BookingCheckoutSerializer(user_booking)
+            print(serializer.data)
             return Response(serializer.data,status=status.HTTP_200_OK)
         except Booking.DoesNotExist:
             return Response({"Msg":'Booking not found'},status=status.HTTP_404_NOT_FOUND)
