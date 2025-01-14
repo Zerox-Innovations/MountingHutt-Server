@@ -18,14 +18,7 @@ class Package(models.Model):
 
     def __str__(self):
         return self.title
-      
-class PackageImage(models.Model):
-    package = models.ForeignKey(Package, related_name="images", on_delete=models.CASCADE)
-    image = CloudinaryField("image") 
-    alt_text = models.CharField(max_length=255, blank=True, null=True)
-
-    def _str_(self):
-        return f"Image for {self.package.title}"
+    
 
 
 class DayDetail(models.Model):

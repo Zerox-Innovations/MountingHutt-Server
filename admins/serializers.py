@@ -1,14 +1,14 @@
 from rest_framework import serializers
 from admins.models import Blog,Activities,Food,Item_category,Room
 from accounts.models import CustomUser
-from package.models import Booking,Package
+from package.models import Booking,Package 
 
 
 
 class BlogSerializer(serializers.ModelSerializer):
     class Meta:
         model = Blog
-        fields = ['id', 'title', 'image']  
+        fields = ['id', 'title', 'image','description']  
 
 class BlogDetailSerializer(serializers.ModelSerializer):
     class Meta:
@@ -161,3 +161,5 @@ class AdminRoomRetriveSerializer(serializers.ModelSerializer):
     class Meta:
         model = Room
         fields = ['room_name','image','capacity','description','price']
+        
+        
