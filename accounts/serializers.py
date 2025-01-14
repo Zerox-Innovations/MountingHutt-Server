@@ -30,3 +30,6 @@ class UserProfileUpdateSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
         fields = ['id','name', 'phone', 'gender']
+
+
+

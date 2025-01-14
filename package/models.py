@@ -18,7 +18,6 @@ class Package(models.Model):
 
     def __str__(self):
         return self.title
-    
 
 
 class DayDetail(models.Model):
