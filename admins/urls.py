@@ -10,7 +10,7 @@ from .views import (
 
 
 router = DefaultRouter()
-router.register("blog", BlogViewset, basename="blogs")
+router.register("blogs", BlogViewset, basename="blogs")
 
 urlpatterns = [
     path("", include(router.urls)),

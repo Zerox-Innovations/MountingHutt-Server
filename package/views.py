@@ -115,6 +115,7 @@ class BookingView(APIView):
     def get(self, request, *args, **kwargs):
 
         package_id = request.GET.get('package_id')
+        print(package_id)
         if not package_id:
             return Response({'Msg': "Enter the package_id"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -134,7 +135,7 @@ class BookingView(APIView):
 
     def post(self,request, *args, **kwargs):
 
-        package_id = request.GET.get('package_id')
+        package_id = request.data.get('package_id')
         if not package_id:
             return Response({'Msg': "Enter the package_id"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -153,9 +154,6 @@ class BookingView(APIView):
 
 
             number_of_travelers = serializer.validated_data.get('number_of_travelers')
-            # min_members = booking_package.min_members
-            # if number_of_travelers < min_members :
-            #     return Response({"Msg":f'Should have Minimum {min_members} members'})
             
             max_members = booking_package.max_members
             if max_members is not None and number_of_travelers > max_members:
@@ -202,7 +200,7 @@ class BookingView(APIView):
 
 class CheckoutView(APIView):
     permission_classes = [IsAuthenticated] 
-    def get(self,request,*args,**kwargs):
+    def get(self,request,booking_id=None, *args,**kwargs):
 
         booking_id = request.GET.get('booking_id')
         if not booking_id:
@@ -292,8 +290,6 @@ class BookingGetAndUpdateView(APIView):
             return Response(serializer.errors)
         except Booking.DoesNotExist:
             return Response({"Msg":'Booking Not Found'})
-
-
 
 
 
