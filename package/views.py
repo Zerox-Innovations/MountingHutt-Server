@@ -246,21 +246,27 @@ class CheckoutView(APIView):
 class BookingGetAndUpdateView(APIView):
     permission_classes = [IsAuthenticated] 
     def get(self,request,*args,**kwargs):
-
-        booking_id = request.GET.get('booking_id')
-        if not booking_id:
-            return Response({'Msg': "Enter the booking_id"}, status=status.HTTP_404_NOT_FOUND)
         
-        try:
-            booking_id = uuid.UUID(booking_id)  # This ensures the booking_id is a valid UUID
-        except ValueError:
-            return Response({'Msg': "booking_id must be a valid UUID"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            user_booking = Booking.objects.get(user = request.user,id=booking_id)
-            serializer = BookingListSerializer(user_booking)
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        except Booking.DoesNotExist:
-            return Response({"Msg":'Booking not found'},status=status.HTTP_404_NOT_FOUND)
+            booking_id = request.GET.get('booking_id')
+            if not booking_id:
+                user_bookings = Booking.objects.filter(user=request.user)
+            
+                if not user_bookings.exists():  # Check if there are no bookings for the user
+                    return Response({'Msg': "No bookings found for this user"}, status=status.HTTP_404_NOT_FOUND)
+                
+                serializer = BookingListSerializer(user_bookings, many=True)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            
+            try:
+                booking_id = uuid.UUID(booking_id)  # This ensures the booking_id is a valid UUID
+            except ValueError:
+                return Response({'Msg': "booking_id must be a valid UUID"}, status=status.HTTP_400_BAD_REQUEST)
+            try:
+                user_booking = Booking.objects.get(user = request.user,id=booking_id)
+                serializer = BookingListSerializer(user_booking)
+                return Response(serializer.data,status=status.HTTP_200_OK)
+            except Booking.DoesNotExist:
+                return Response({"Msg":'Booking not found'},status=status.HTTP_404_NOT_FOUND)
         
 
 

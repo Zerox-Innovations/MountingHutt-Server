@@ -18,13 +18,24 @@ class Package(models.Model):
     def __str__(self):
         return self.title
       
+
+
 class PackageImage(models.Model):
+    CATEGORY_CHOICES = [
+        ('banner', 'Banner Image'),
+        ('background', 'Background Image'),
+        ('thumbnail', 'Thumbnail Image'),
+        ('gallery', 'Gallery Image'),
+    ]
     package = models.ForeignKey(Package, related_name="images", on_delete=models.CASCADE)
-    image = CloudinaryField("image") 
+    image = CloudinaryField("image")
     alt_text = models.CharField(max_length=255, blank=True, null=True)
+    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='gallery')
 
     def _str_(self):
-        return f"Image for {self.package.title}"
+        return f"{self.category} for {self.package.title}"
+
+
 
 
 class DayDetail(models.Model):

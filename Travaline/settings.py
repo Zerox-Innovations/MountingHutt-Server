@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'payment',
 ]
 
+
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -174,8 +175,23 @@ REST_FRAMEWORK = {
 }
 
 
+
+
 RAZOR_KEY_ID = os.getenv('RAZOR_KEY_ID')
 RAZOR_KEY_SECRET = os.getenv('RAZOR_KEY_SECRET')
+
+
+
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = 'smtp.gmail.com'
+EMAIL_PORT = 587
+EMAIL_USE_TLS = True
+EMAIL_HOST_USER = 'ahammedsalmanp3@gmail.com'
+EMAIL_HOST_PASSWORD = 'nhhq igik bfau hyll'
+
+
+
 
 
 
