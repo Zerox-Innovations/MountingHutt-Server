@@ -13,30 +13,11 @@ class Package(models.Model):
     max_members = models.PositiveIntegerField(null=True,blank=True)
     price = models.PositiveIntegerField()
     additional_info = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
-      
-
-
-class PackageImage(models.Model):
-    CATEGORY_CHOICES = [
-        ('banner', 'Banner Image'),
-        ('background', 'Background Image'),
-        ('thumbnail', 'Thumbnail Image'),
-        ('gallery', 'Gallery Image'),
-    ]
-    package = models.ForeignKey(Package, related_name="images", on_delete=models.CASCADE)
-    image = CloudinaryField("image")
-    alt_text = models.CharField(max_length=255, blank=True, null=True)
-    category = models.CharField(max_length=50, choices=CATEGORY_CHOICES, default='gallery')
-
-    def _str_(self):
-        return f"{self.category} for {self.package.title}"
-
-
 
 
 class DayDetail(models.Model):
