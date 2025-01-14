@@ -2,10 +2,11 @@ from django.shortcuts import render
 from rest_framework.views import APIView
 from admins.models import Activities,Food,Room
 from package.models import Booking
-from users.serializers import UserActivitySerializer,UserFoodSerializer,UserRoomSerializer,BookingHistorySerializer
+from users.serializers import UserActivitySerializer,UserFoodSerializer,UserRoomSerializer
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
+from django.conf import settings
 # Create your views here.
 
 
@@ -47,14 +48,37 @@ class UserRoomView(APIView):
             return Response({"Msg":'Rooms not found'},status=status.HTTP_404_NOT_FOUND)
 
 
-class BookingHistoryView(APIView):
 
-    def get(self, request, *args, **kwargs):
-        user = request.user
-        try:
-            # Assuming the Booking model has a ForeignKey to the User model named 'user'
-            history = Booking.objects.filter(user=user)
-            serializer = BookingHistorySerializer(history, many=True)
-            return Response(serializer.data)
-        except Booking.DoesNotExist:
-            return Response({"Msg": 'Not found'})
+from django.core.mail import send_mail
+from django.http import JsonResponse
+from django.views import View
+from users.form import ContactForm
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
+
+@method_decorator(csrf_exempt, name='dispatch')
+class ContactUsView(APIView):
+    def post(self, request, *args, **kwargs):
+        form = ContactForm(request.POST)
+        if form.is_valid():
+            name = form.cleaned_data['name']
+            email = form.cleaned_data['email']
+            message = form.cleaned_data['message']
+
+            subject = f"Client Message from {email}"
+            body = f"Name: {name}\nEmail: {email}\n\nMessage:\n{message}"
+
+            try:
+                send_mail(
+                    subject,
+                    body,
+                    email,  # From email
+                    [settings.EMAIL_HOST_USER],  # To email
+                    fail_silently=False,
+                )
+                return Response({'Msg': 'Email sent successfully!'}, status=200)
+            except Exception as e:
+                return Response({'Msg': f'Failed to send email: {str(e)}'}, status=500)
+        return Response({'Msg': 'Invalid form data'}, status=400)
+
+

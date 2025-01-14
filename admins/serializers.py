@@ -56,8 +56,8 @@ class AdminBookingListSerializer(serializers.ModelSerializer):
     class Meta:
         model = Booking
         fields = [
-            'user_data', 'packge_data', 'booking_date', 'travel_start_date', 
-            'travel_end_date', 'number_of_travelers', 'total_price', 
+            'user_data', 'packge_data', 'created_at', 'travel_start_date', 
+            'travel_end_date', 'number_of_travelers', 'total_amount', 
             'advance_amount', 'status', 'contact_number', 'email'
         ]
 
