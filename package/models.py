@@ -7,6 +7,8 @@ from cloudinary.models import CloudinaryField
 class Package(models.Model):
     title = models.CharField(max_length=255)
     description = models.TextField(max_length=500) 
+    banner_image = CloudinaryField(null=True,blank=True)
+    background_image = CloudinaryField(null=True,blank=True)
     days = models.PositiveIntegerField(default=1)
     nights = models.PositiveIntegerField(default=1)
     min_members = models.PositiveBigIntegerField(null=True,blank=True)
@@ -50,7 +52,7 @@ class Booking(models.Model):
     pro_noun = models.CharField(max_length=20, choices=[('Mr', 'Mr'),('Mrs', 'mrs')],null=True,blank=True)
     contact_number = models.CharField(max_length=15,null=True,blank=True)
     email = models.EmailField(null=True,blank=True)
-    razorpay_order_id = models.CharField(null=True,blank=True)
+    
 
 
     def __str__(self):

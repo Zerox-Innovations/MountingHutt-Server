@@ -17,7 +17,6 @@ urlpatterns = [
     path('booking/',BookingView.as_view(),name='booking'),
     path('checkout/',CheckoutView.as_view(),name='checkout'),
     path('bookings/',BookingGetAndUpdateView.as_view(),name='bookings'),
-    # path('image/',PackageImageView.as_view(),name='image'),
-    # path('image-update/',PackgeImageRetriveUpdateView.as_view(),name='update'),
+
 
 ]

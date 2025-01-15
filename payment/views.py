@@ -105,14 +105,25 @@ class PaymentSuccessView(View):
     def get(self, request, *args, **kwargs):
         payment_id = request.GET.get('razorpay_payment_id')
         status = request.GET.get('razorpay_payment_link_status')
+        paymene_link_id = request.GET.get('razorpay_payment_link_id')
 
         if not payment_id or status != "paid":
             return HttpResponse("Payment unsuccessful. Please try again.", status=400)
-        payment_status = Payment.objects.get(payment_status)
-        payment_status.payment_status = "paid"
-        # Optional: Verify the payment details using Razorpay's API if required
-        # payment_details = razorpay_client.payment.fetch(payment_id)
+        try:
+            payment = Payment.objects.get(razorpay_payment_id=paymene_link_id)
+        except Payment.DoesNotExist:
+            return HttpResponse("Invalid payment ID.", status=404)
 
+        # Update the payment status
+        payment.payment_status = "paid"
+        payment.save()
+
+        
+        booking = payment.booking_data  
+        booking.status = "Confirmed"
+        booking.save()
+
+        # Render the success page
         return render(request, 'razpayment.html', {
             "payment_id": payment_id,
             "status": status
