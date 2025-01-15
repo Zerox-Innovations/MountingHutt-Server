@@ -5,6 +5,7 @@ from rest_framework.views import APIView
 from package.serializers import (
     PackageListSerializer,PackageRetriveForBookingSerializer,BookingSerializer,
     BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer
+
 )
 from package.models import Package,Booking
 from rest_framework import viewsets

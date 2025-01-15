@@ -18,4 +18,5 @@ urlpatterns = [
     path('checkout/',CheckoutView.as_view(),name='checkout'),
     path('bookings/',BookingGetAndUpdateView.as_view(),name='bookings'),
 
+
 ]

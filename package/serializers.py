@@ -45,6 +45,20 @@ class PackageDetailSerializer(serializers.ModelSerializer):
 
 
 
+
+# Packge image List
+class PackageTitleSerializer(serializers.ModelSerializer):
+
+    
+    class Meta:
+      model = Package
+      fields = ['title']
+
+
+
+
+
+
 # Bokking Retrive
 class PackageRetriveForBookingSerializer(serializers.ModelSerializer):
     
