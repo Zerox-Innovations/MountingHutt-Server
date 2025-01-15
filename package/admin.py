@@ -5,6 +5,7 @@ from package.models import DayDetail, Package , Booking
 class PackagesAdmin(admin.ModelAdmin):
     list_display = ('id','title', 'description', 'days', 'nights', 'price', 'created_at', 'updated_at')
 
+
 @admin.register(DayDetail)
 class DayDetailAdmin(admin.ModelAdmin):
     list_display = ('day_number', 'description', 'package')

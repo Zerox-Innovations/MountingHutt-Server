@@ -4,7 +4,8 @@ from rest_framework import status
 from rest_framework.views import APIView
 from package.serializers import (
     PackageListSerializer,PackageRetriveForBookingSerializer,BookingSerializer,
-    BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer,
+    BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer
+
 )
 from package.models import Package,Booking
 from rest_framework import viewsets
@@ -13,7 +14,7 @@ import razorpay
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 import uuid
-
+from package.tasks import delete_pending_bookings
 
 class PackageViewset(viewsets.ModelViewSet):
     permission_classes =[IsAuthenticated]
@@ -27,6 +28,7 @@ class PackageViewset(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
+
 
 
 
@@ -55,7 +57,7 @@ class BookingView(APIView):
 
     def post(self,request, *args, **kwargs):
 
-        package_id = request.data.get('package_id')
+        package_id = request.GET.get('package_id')
         if not package_id:
             return Response({'Msg': "Enter the package_id"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -101,6 +103,7 @@ class BookingView(APIView):
                 balance_amount = balance_amount,
                 
             )
+            delete_pending_bookings()
             response_serializer = BookingSerializer(queryset)
             response_data = {
                 "total_price": queryset.total_amount,

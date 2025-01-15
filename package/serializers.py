@@ -43,7 +43,7 @@ class PackageDetailSerializer(serializers.ModelSerializer):
 
 
 
-# p
+
 
 
 # Packge image List
@@ -53,6 +53,7 @@ class PackageTitleSerializer(serializers.ModelSerializer):
     class Meta:
       model = Package
       fields = ['title']
+
 
 
 
