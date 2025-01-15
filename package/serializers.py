@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from package.models import Package,DayDetail,Booking,PackageImage
+from package.models import Package,DayDetail,Booking
 from rest_framework.exceptions import ValidationError
 from datetime import timedelta
 from rest_framework.response import Response
@@ -40,64 +40,6 @@ class PackageDetailSerializer(serializers.ModelSerializer):
             DayDetail.objects.create(package=package, **day_detail_data)
         
         return package
-
-
-
-# packge image creation
-class PackgeImageSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = PackageImage
-        fields = ['image', 'alt_text']
-
-    def create(self, validated_data):
-        # Get the package from context
-        package = self.context.get('package')
-
-        validated_data.pop('package', None)
-
-        return PackageImage.objects.create(package=package, **validated_data)
-
-
-
-# Packge image List
-class PackageTitleSerializer(serializers.ModelSerializer):
-
-    
-    class Meta:
-      model = Package
-      fields = ['title']
-      
-class PackgeImageListSerializer(serializers.ModelSerializer):
-    package_data = PackageTitleSerializer(source='package', read_only=True)
-    class Meta:
-        model = PackageImage
-        fields = ['package','package_data','image', 'alt_text']
-
-
-
-# packge image Get and update
-class PackgeImageGetUpdateSerializer(serializers.ModelSerializer):
-    package_data = PackageTitleSerializer(source='package', read_only=True)
-    class Meta:
-        model = PackageImage
-        fields = ['package','package_data','image', 'alt_text']
-
-
-    def update(self, instance, validated_data):
-        package = validated_data.get('package',instance.package)
-        image = validated_data.get('image',instance.image)
-        alt_text = validated_data.get('alt_text',instance.alt_text)
-
-        instance.package = package
-        instance.image = image
-        instance.alt_text = alt_text
-
-        instance.save()
-
-        return instance
-
-
-
 
 
 

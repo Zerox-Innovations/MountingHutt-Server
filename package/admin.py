@@ -1,14 +1,10 @@
 from django.contrib import admin
-from package.models import DayDetail, Package , Booking,PackageImage
+from package.models import DayDetail, Package , Booking
 
 @admin.register(Package)
 class PackagesAdmin(admin.ModelAdmin):
     list_display = ('id','title', 'description', 'days', 'nights', 'price', 'created_at', 'updated_at')
 
-
-@admin.register(PackageImage)
-class PackageImage(admin.ModelAdmin):
-    list_display = ('id','package', 'alt_text')
 
 @admin.register(DayDetail)
 class DayDetailAdmin(admin.ModelAdmin):

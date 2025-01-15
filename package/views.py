@@ -4,17 +4,16 @@ from rest_framework import status
 from rest_framework.views import APIView
 from package.serializers import (
     PackageListSerializer,PackageRetriveForBookingSerializer,BookingSerializer,
-    BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer,PackgeImageSerializer,
-    PackgeImageListSerializer,PackgeImageGetUpdateSerializer
+    BookingCheckoutSerializer,BookingListSerializer,BookingUpdateSerializer
 )
-from package.models import Package,Booking,PackageImage
+from package.models import Package,Booking
 from rest_framework import viewsets
 from datetime import timedelta
 import razorpay
 from django.conf import settings
 from rest_framework.permissions import IsAuthenticated
 import uuid
-
+from package.tasks import delete_pending_bookings
 
 class PackageViewset(viewsets.ModelViewSet):
     permission_classes =[IsAuthenticated]
@@ -28,84 +27,6 @@ class PackageViewset(viewsets.ModelViewSet):
         serializer.is_valid(raise_exception=True)
         self.perform_update(serializer)
         return Response(serializer.data)
-
-class PackageImageView(APIView):
-
-    def post(self,request,*args,**kwargs):
-        package_id = request.GET.get('package_id')
-        if not package_id:
-            return Response({'Msg': "Enter the package_id"}, status=status.HTTP_404_NOT_FOUND)
-        
-        try:
-            package_id = int(package_id)
-        except (ValueError, TypeError):
-            return Response({'Msg': "package_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
-        
-        
-        try:
-            package = Package.objects.get(id = package_id)
-            pass
-        except Package.DoesNotExist:
-            return Response({"Msg":'Package noy found'})
-        serializer = PackgeImageSerializer(data=request.data, context={'package': package})
-
-        if serializer.is_valid():
-            # Save the image and package
-            serializer.save(package=package)
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
-
-    def get(self,request,*args,**keargs):
-
-        try:
-            image = PackageImage.objects.all()
-            serializer= PackgeImageListSerializer(image,many = True)
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        except Package.DoesNotExist:
-            return Response({"Msg":'Packges not found'},status=status.HTTP_404_NOT_FOUND)
-
-
-
-class PackgeImageRetriveUpdateView(APIView):
-
-    def get(self,request,*args,**keargs):
-
-        image_id = request.GET.get('image_id')
-        if not image_id:
-            return Response({'Msg': "Enter the image_id"}, status=status.HTTP_404_NOT_FOUND)
-        
-        try:
-            image_id = int(image_id)
-        except (ValueError, TypeError):
-            return Response({'Msg': "image_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            image = PackageImage.objects.get(id = image_id)
-            serializer = PackgeImageGetUpdateSerializer(image)
-            return Response(serializer.data,status=status.HTTP_200_OK)
-        except PackageImage.DoesNotExist:
-            return Response({"Msg":'Package image not found'},status=status.HTTP_404_NOT_FOUND)
-    
-    def put(self,request,*args,**keargs):
-
-        image_id = request.GET.get('image_id')
-        if not image_id:
-            return Response({'Msg': "Enter the image_id"}, status=status.HTTP_404_NOT_FOUND)
-        
-        try:
-            image_id = int(image_id)
-        except (ValueError, TypeError):
-            return Response({'Msg': "image_id must be a valid integer"}, status=status.HTTP_400_BAD_REQUEST)
-        try:
-            image = PackageImage.objects.get(id = image_id)
-            serializer = PackgeImageGetUpdateSerializer(image,data = request.data,partial = True)
-            if serializer.is_valid():
-                serializer.save()
-            return Response(serializer.data,status=status.HTTP_201_CREATED)
-        except PackageImage.DoesNotExist:
-            return Response({"Msg":'Packge image not found'})
-        
 
 
 
@@ -135,7 +56,7 @@ class BookingView(APIView):
 
     def post(self,request, *args, **kwargs):
 
-        package_id = request.data.get('package_id')
+        package_id = request.GET.get('package_id')
         if not package_id:
             return Response({'Msg': "Enter the package_id"}, status=status.HTTP_404_NOT_FOUND)
         
@@ -181,6 +102,7 @@ class BookingView(APIView):
                 balance_amount = balance_amount,
                 
             )
+            delete_pending_bookings()
             response_serializer = BookingSerializer(queryset)
             response_data = {
                 "total_price": queryset.total_amount,
