@@ -65,5 +65,3 @@ class Room(models.Model):
         return self.room_name
 
 
-# class services(models.Model):
-

@@ -15,12 +15,11 @@ class Package(models.Model):
     max_members = models.PositiveIntegerField(null=True,blank=True)
     price = models.PositiveIntegerField()
     additional_info = models.JSONField(default=dict, blank=True)
-    created_at = models.DateTimeField(auto_now_add=True) 
+    created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
 
     def __str__(self):
         return self.title
-      
 
 
 class DayDetail(models.Model):
