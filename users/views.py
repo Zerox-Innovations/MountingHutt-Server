@@ -55,11 +55,14 @@ from django.views import View
 from users.form import ContactForm
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+import json
 
 @method_decorator(csrf_exempt, name='dispatch')
 class ContactUsView(APIView):
     def post(self, request, *args, **kwargs):
-        form = ContactForm(request.POST)
+        
+        data = json.loads(request.body)  # Parse the JSON body into a dictionary
+        form = ContactForm(data)
         if form.is_valid():
             name = form.cleaned_data['name']
             email = form.cleaned_data['email']

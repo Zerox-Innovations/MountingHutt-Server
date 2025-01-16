@@ -145,8 +145,6 @@ class BookingListSerializer(serializers.ModelSerializer):
 
 
 
-
-
 # Booking updation
 class NonRefundableAdvanceError(Exception):
     pass
@@ -183,6 +181,9 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
         instance.email = validated_data.get('email', instance.email)
 
         updated_travelers = validated_data.get('number_of_travelers',instance.number_of_travelers)
+        canceled_members = None
+        not_refund = None
+        updated_advance = None
         if updated_travelers:
             
             min_members = booking_package.min_members
@@ -212,11 +213,15 @@ class BookingUpdateSerializer(serializers.ModelSerializer):
             updated_balance = updated_payable_amount - updated_advance
 
             instance.payable_amount = updated_payable_amount
-            instance.advance_amount = updated_advance
             instance.balance_amount = updated_balance
 
             instance.number_of_travelers = updated_travelers
         instance.save()
+        self.custom_response = {
+            "canceled_members": canceled_members,
+            "not_refund": not_refund,
+            "updated_advance": updated_advance,
+        }
         return instance
 
     

@@ -104,10 +104,10 @@ import razorpay
 class PaymentSuccessView(View):
     def get(self, request, *args, **kwargs):
         payment_id = request.GET.get('razorpay_payment_id')
-        status = request.GET.get('razorpay_payment_link_status')
+        raz_status = request.GET.get('razorpay_payment_link_status')
         paymene_link_id = request.GET.get('razorpay_payment_link_id')
 
-        if not payment_id or status != "paid":
+        if not payment_id or raz_status != "paid":
             return HttpResponse("Payment unsuccessful. Please try again.", status=400)
         try:
             payment = Payment.objects.get(razorpay_payment_id=paymene_link_id)
@@ -122,12 +122,7 @@ class PaymentSuccessView(View):
         booking = payment.booking_data  
         booking.status = "Confirmed"
         booking.save()
-
-        # Render the success page
-        return render(request, 'razpayment.html', {
-            "payment_id": payment_id,
-            "status": status
-        })
+        return Response({'Msg': "Payment Successful"}, status=status.HTTP_400_BAD_REQUEST)
 
 
 
