@@ -70,6 +70,7 @@ class BookingView(APIView):
         
         serializer = BookingSerializer(data = request.data)
         if serializer.is_valid():
+            
             travel_start_date = serializer.validated_data.get('travel_start_date')
             total_days = booking_package.nights
             travel_end_date = travel_start_date + timedelta(days=total_days)
@@ -103,7 +104,7 @@ class BookingView(APIView):
                 balance_amount = balance_amount,
                 
             )
-            delete_pending_bookings()
+            delete_pending_bookings.apply_async(args=[request.user.id], countdown=300)
             response_serializer = BookingSerializer(queryset)
             response_data = {
                 "total_price": queryset.total_amount,
@@ -207,8 +208,15 @@ class BookingGetAndUpdateView(APIView):
             usr_booking = Booking.objects.get(user = request.user,id=booking_id)
             serializer = BookingUpdateSerializer(usr_booking,data=request.data,partial=True)
             if serializer.is_valid():
-                
                 serializer.save()
+
+                additional_response = serializer.custom_response
+                if additional_response.get("not_refund") is not None and additional_response.get("updated_advance") is not None:
+                    not_refund = additional_response["not_refund"]
+                    return Response({"Msg": f"Booking updated successfully,You already paid Canceled members Advance {not_refund} is not refunded"}, status=status.HTTP_200_OK)
+
+                
+                # serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors)
         except Booking.DoesNotExist:
